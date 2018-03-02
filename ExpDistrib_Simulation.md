@@ -75,7 +75,7 @@ Q2 code listing:
 
 ```r
 sample.var <- var(sims.exp.means)
-theory.var <- (1/lambda)^2/n
+theory.var <- ((1/lambda)^2)/n
 ```
 
 Q3 code listing:

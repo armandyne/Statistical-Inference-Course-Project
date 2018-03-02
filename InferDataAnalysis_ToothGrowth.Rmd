@@ -1,0 +1,68 @@
+---
+title: "Basic Inferential Data Analysis of the ToothGrowth data"
+author: "Arman Iskaliyev"
+date: "28/02/2018"
+output: 
+     html_document:
+     keep_md: yes
+---
+
+###*Overview*
+* * *
+We will explore the ToothGrowth dataset from the base R. It contains information about the effects of vitamin C's dosage on tooth growth of Guinea Pigs. We will perform exploratory analysis and hypothesis testing to figure out there is a relationship between tooth growth and daily dosage of vitamin C.
+
+
+###*Basic exploratory data analysis*
+* * *
+Dataset description:
+
+The response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, (orange juice or ascorbic acid (a form of vitamin C and coded as VC).
+
+Codebook:
+
+* len - numeric, Tooth length
+
+* supp - factor, Supplement type (VC or OJ).
+
+* dose - numeric, Dose in milligrams/day
+
+Load data and required packages
+```{r loadds, error=TRUE, message=FALSE}
+data("ToothGrowth")
+library(ggplot2)
+library(dplyr)
+```
+
+Explore the dataset
+```{r}
+glimpse(ToothGrowth)
+summary(ToothGrowth)
+```
+
+Visualize
+```{r}
+ggplot(ToothGrowth, aes(supp, fill = factor(dose))) + 
+     geom_bar(position = "fill")
+```
+
+```{r}
+ggplot(ToothGrowth, aes(x = supp, y = len, color = factor(dose))) + 
+     geom_point(alpha = .5) #+ 
+     #facet_wrap(~factor(dose), ncol = 1)
+```
+
+```{r}
+ggplot(ToothGrowth, aes(x = supp, y = len, fill = factor(dose))) +
+     geom_boxplot()
+```
+
+###*Hypothesis tests*
+* * *
+
+###*Conclusion*
+* * *
+
+
+###*Appendices*
+* * *
+
