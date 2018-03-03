@@ -2,9 +2,11 @@
 title: "Exponential distribution and its comparing with the CLT"
 author: "Arman Iskaliyev"
 date: "28/02/2018"
-output: 
-     html_document:
-          keep_md: yes
+output:
+  word_document: default
+  html_document:
+    keep_md: yes
+    theme: united
 ---
 
 ###Overview

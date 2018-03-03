@@ -2,17 +2,19 @@
 title: "Basic Inferential Data Analysis of the ToothGrowth data"
 author: "Arman Iskaliyev"
 date: "28/02/2018"
-output: 
-     html_document:
-     keep_md: yes
+output:
+  word_document: default
+  html_document:
+    keep_md: yes
+    theme: united
 ---
 
-###*Overview*
+###**Overview**
 * * *
-We will explore the ToothGrowth dataset from the base R. It contains information about the effects of vitamin C's dosage on tooth growth of Guinea Pigs. We will perform exploratory analysis and hypothesis testing to figure out there is a relationship between tooth growth and daily dosage of vitamin C.
+We will explore the ToothGrowth dataset from the base R. It contains information about the effects of vitamin C's dosage on tooth growth of Guinea Pigs. We will perform exploratory analysis and hypothesis testing to figure out is there a relationship between tooth growth and daily dosage of vitamin C.
 
 
-###*Basic exploratory data analysis*
+###**Basic exploratory data analysis**
 * * *
 Dataset description:
 
@@ -26,43 +28,107 @@ Codebook:
 
 * dose - numeric, Dose in milligrams/day
 
-Load data and required packages
-```{r loadds, error=TRUE, message=FALSE}
-data("ToothGrowth")
+Load data and required packages:
+```{r loaddata, message=FALSE}
 library(ggplot2)
 library(dplyr)
+library(tidyr)
+library(purrr)
+library(broom)
+options(tibble.width = Inf) 
+data("ToothGrowth")
 ```
 
-Explore the dataset
+Explore the dataset:
 ```{r}
 glimpse(ToothGrowth)
 summary(ToothGrowth)
 ```
 
-Visualize
 ```{r}
-ggplot(ToothGrowth, aes(supp, fill = factor(dose))) + 
-     geom_bar(position = "fill")
+ToothGrowth$dose <- factor(ToothGrowth$dose)
 ```
 
-```{r}
-ggplot(ToothGrowth, aes(x = supp, y = len, color = factor(dose))) + 
-     geom_point(alpha = .5) #+ 
-     #facet_wrap(~factor(dose), ncol = 1)
+Exploring variables via visualization:
+
+```{r fig1, echo=FALSE}
+ggplot(ToothGrowth, aes(x = dose, fill = supp)) + 
+     geom_bar() + 
+     labs(caption = "Figure 1", title = "Total counts of observations for each combination of dose and supplement type")
 ```
 
-```{r}
-ggplot(ToothGrowth, aes(x = supp, y = len, fill = factor(dose))) +
-     geom_boxplot()
+```{r fig2, echo=FALSE}
+ggplot(ToothGrowth, aes(x = len)) + 
+     geom_density(fill = "skyblue") + 
+     geom_vline(xintercept = mean(ToothGrowth$len), lty = "dashed") + 
+     annotate(geom = "text", x = mean(ToothGrowth$len), y = 0, label = "Mean") + 
+     labs(caption = "Figure 2", title = "Density of tooth length")
 ```
 
-###*Hypothesis tests*
+```{r fig3, echo=FALSE}
+ggplot(ToothGrowth, aes(x = dose, y = len, fill = supp)) +
+     geom_boxplot() + 
+     labs(caption = "Figure 3", title = "Compare tooth length vs. dose by supplement type")
+
+```
+
+###**Hypothesis tests**
 * * *
+In the previous step of exploratory data analysis we see that there is a obvious relationship between the dose levels of vitamin and tooth growth. Therefore we can say the dosage affects the tooth length. Also visualizations show us that supplement delivery method has no robust impacts on tooth length. 
 
-###*Conclusion*
+Let's calculate t-test for both groups. 
+
+1. Testing tooth growth by supplement delivery method:
+
+Null Hypothesis : different supplement types have no effect on tooth length
+
+```{r}
+t.result1 <- 
+     tidy(t.test(len~supp, data = ToothGrowth)) %>%
+     print()
+```
+
+Here We can not reject the Null Hypothesis, cause the Confidence interval contains zero and also the p.value (`r t.result1$p.value`) is greater than 0.05. 
+
+2. Testing tooth growth by dose:
+
+Null Hypothesis : dosage levels have no effect on tooth length
+
+We will compare doses 0.5 with 1, 1 with 2 and 2 with 0.5
+```{r}
+t.result2 <- 
+ToothGrowth %>% 
+     mutate(dose.group = "0.5-1") %>% 
+     bind_rows(ToothGrowth) %>% 
+     mutate(dose.group = if_else(is.na(dose.group), "1-2", dose.group)) %>%
+     bind_rows(ToothGrowth) %>% 
+     mutate(dose.group = if_else(is.na(dose.group), "2-0.5", dose.group)) %>%
+     filter((dose.group == "0.5-1" & dose %in% c(.5, 1)) |
+            (dose.group == "1-2" & dose %in% c(1, 2)) |
+            (dose.group == "2-0.5" & dose %in% c(2, .5))) %>%
+     select(-supp) %>%
+     group_by(dose.group) %>%
+     do(tidy(t.test(len~dose, data = .))) %>%
+     print()
+```
+The confidence intervals for these doses groups allow us to reject the Null Hypothesis.
+
+###**Conclusion**
 * * *
+* Supplement delivery method has no effect on tooth growth
 
+* Increasing the dose level increases tooth growth
 
-###*Appendices*
+###**Appendices**
 * * *
+Code to plot Figure 1:
+```{r ref.label="fig1", eval=FALSE}
+```
 
+Code to plot Figure 2:
+```{r ref.label="fig2", eval=FALSE}
+```
+
+Code to plot Figure 3:
+```{r ref.label="fig3", eval=FALSE}
+```
